@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Difensori — Foglio Asta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0e14;
+    --surface: #131824;
+    --surface-2: #1a2130;
+    --border: #262f42;
+    --text: #eef1f6;
+    --text-muted: #8993a8;
+    --gold: #f2b134;
+    --gold-soft: rgba(242,177,52,0.14);
+    --dc: #5b8def;
+    --terzino: #2dd4bf;
+    --braccetto: #a78bfa;
+    --esterno: #fb923c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;}
+  .wrap{max-width:900px;margin:0 auto;padding:18px 14px 60px;}
+
+  header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg, var(--bg) 78%, transparent);padding-bottom:10px;margin-bottom:6px;}
+  .title-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-top:6px;}
+  h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;font-size:clamp(26px,6vw,36px);margin:0;line-height:0.95;}
+  h1 span{color:var(--gold);}
+  .count{font-size:13px;color:var(--text-muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+
+  .controls{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .search-sort{display:flex;gap:8px;}
+  input[type="search"]{
+    flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);
+    padding:10px 12px;border-radius:10px;font-size:15px;font-family:'Inter',sans-serif;
+  }
+  input[type="search"]::placeholder{color:var(--text-muted);}
+  select{
+    background:var(--surface);border:1px solid var(--border);color:var(--text);
+    padding:10px 10px;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;
+  }
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{
+    border:1px solid var(--border);background:var(--surface);color:var(--text-muted);
+    padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;
+    user-select:none;display:flex;align-items:center;gap:6px;transition:all .12s;
+  }
+  .chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+  .chip[data-active="true"]{color:var(--bg);border-color:transparent;}
+  .chip[data-role="all"][data-active="true"]{background:var(--text);}
+  .chip[data-role="dc"]{color:var(--dc);} .chip[data-role="dc"][data-active="true"]{background:var(--dc);}
+  .chip[data-role="terzino"]{color:var(--terzino);} .chip[data-role="terzino"][data-active="true"]{background:var(--terzino);}
+  .chip[data-role="braccetto"]{color:var(--braccetto);} .chip[data-role="braccetto"][data-active="true"]{background:var(--braccetto);}
+  .chip[data-role="esterno"]{color:var(--esterno);} .chip[data-role="esterno"][data-active="true"]{background:var(--esterno);}
+
+  .list{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+
+  .row{
+    display:grid;grid-template-columns:5px 1fr auto;align-items:stretch;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  }
+  .bar{width:5px;}
+  .bar.dc{background:var(--dc);} .bar.terzino{background:var(--terzino);}
+  .bar.braccetto{background:var(--braccetto);} .bar.esterno{background:var(--esterno);}
+
+  .main{padding:10px 12px;min-width:0;}
+  .name-line{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.2px;}
+  .team{font-size:12.5px;color:var(--text-muted);font-weight:500;}
+  .role-line{margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .role-badge{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:5px;}
+  .role-badge.dc{color:var(--dc);background:rgba(91,141,239,.14);}
+  .role-badge.terzino{color:var(--terzino);background:rgba(45,212,191,.14);}
+  .role-badge.braccetto{color:var(--braccetto);background:rgba(167,139,250,.14);}
+  .role-badge.esterno{color:var(--esterno);background:rgba(251,146,60,.14);}
+  .note{font-size:11px;color:var(--text-muted);font-style:italic;}
+
+  .stats{display:flex;gap:12px;margin-top:7px;font-size:12px;color:var(--text-muted);flex-wrap:wrap;font-variant-numeric:tabular-nums;}
+  .stats b{color:var(--text);font-weight:700;}
+  .fmv{display:flex;align-items:center;gap:3px;}
+  .fmv b{color:var(--gold);}
+
+  .price-col{display:flex;align-items:center;justify-content:center;padding:0 12px;background:var(--surface-2);border-left:1px solid var(--border);min-width:78px;}
+  .price{text-align:center;}
+  .price .num{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;line-height:1;color:var(--gold);}
+  .price .lbl{font-size:9px;letter-spacing:.6px;color:var(--text-muted);text-transform:uppercase;margin-top:2px;}
+  .price[data-tier="5"] .num{font-size:26px;text-shadow:0 0 14px rgba(242,177,52,.55);}
+  .price[data-tier="4"] .num{font-size:24px;text-shadow:0 0 8px rgba(242,177,52,.35);}
+
+  .group-label{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;
+    color:var(--text-muted);font-size:13px;letter-spacing:1px;margin:16px 2px 2px;
+    border-bottom:1px solid var(--border);padding-bottom:4px;
+  }
+  .group-label:first-child{margin-top:2px;}
+
+  .empty{text-align:center;color:var(--text-muted);padding:40px 10px;font-size:14px;}
+
+  @media (min-width:640px){
+    .row{grid-template-columns:5px 1fr auto;}
+    .stats{gap:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title-row">
+      <h1>Difensori<span>.</span></h1>
+      <div class="count" id="count">26 giocatori</div>
+    </div>
+    <div class="controls">
+      <div class="search-sort">
+        <input type="search" id="search" placeholder="Cerca giocatore o squadra…">
+        <select id="sort">
+          <option value="price-desc">Prezzo ↓</option>
+          <option value="price-asc">Prezzo ↑</option>
+          <option value="fmv-desc">FMV ↓</option>
+          <option value="name-asc">Nome A-Z</option>
+          <option value="team-asc">Squadra A-Z</option>
+        </select>
+      </div>
+      <div class="chips" id="chips">
+        <div class="chip" data-role="all" data-active="true"><span class="dot"></span>Tutti</div>
+        <div class="chip" data-role="dc"><span class="dot"></span>Centrali</div>
+        <div class="chip" data-role="terzino"><span class="dot"></span>Terzini</div>
+        <div class="chip" data-role="braccetto"><span class="dot"></span>Braccetti</div>
+        <div class="chip" data-role="esterno"><span class="dot"></span>Esterni</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" style="display:none;">Nessun giocatore trovato.</div>
+</div>
+
+<script>
+const players = [
+  {name:"Juan Miranda", team:"Bologna", role:"terzino", roleLabel:"Terzino Sinistro", fmv:6.10, gol:1, ast:3, p:31, g:6, price:12, note:""},
+  {name:"Trevoh Chalobah", team:"Como 1907", role:"dc", roleLabel:"Difensore Centrale", fmv:6.32, gol:3, ast:0, p:34, g:4, price:16, note:""},
+  {name:"Ilario Monterisi", team:"Frosinone", role:"dc", roleLabel:"Difensore Centrale", fmv:6.30, gol:2, ast:5, p:25, g:7, price:2, note:""},
+  {name:"Victor Valdepenas", team:"Fiorentina", role:"terzino", roleLabel:"Terzino Sinistro", fmv:6.30, gol:2, ast:1, p:30, g:4, price:8, note:""},
+  {name:"Alessandro Marcandalli", team:"Genoa", role:"dc", roleLabel:"Difensore Centrale", fmv:5.84, gol:0, ast:1, p:31, g:4, price:3, note:""},
+  {name:"Leo Ostigard", team:"Genoa", role:"dc", roleLabel:"Difensore Centrale", fmv:6.51, gol:5, ast:0, p:30, g:7, price:16, note:""},
+  {name:"Federico Dimarco", team:"Inter", role:"terzino", roleLabel:"Terzino Sinistro", fmv:7.64, gol:7, ast:17, p:35, g:3, price:80, note:"Sostituto: Carlos Augusto"},
+  {name:"Manuel Akanji", team:"Inter", role:"braccetto", roleLabel:"Braccetto Destro", fmv:6.41, gol:2, ast:0, p:32, g:4, price:27, note:"Sostituto: Bisseck"},
+  {name:"Pierre Kalulu", team:"Juventus", role:"terzino", roleLabel:"Terzino Destro / Braccetto", fmv:6.36, gol:2, ast:4, p:37, g:3, price:18, note:""},
+  {name:"Antonino Gallo", team:"Lecce", role:"terzino", roleLabel:"Terzino Sinistro", fmv:5.99, gol:0, ast:3, p:37, g:3, price:3, note:""},
+  {name:"Matteo Gabbia", team:"Milan", role:"dc", roleLabel:"Difensore Centrale", fmv:5.84, gol:0, ast:0, p:29, g:4, price:5, note:""},
+  {name:"Mario Gila", team:"Milan", role:"braccetto", roleLabel:"Braccetto Destro", fmv:5.95, gol:0, ast:0, p:31, g:4, price:18, note:""},
+  {name:"Ricardo Mangas", team:"Monza", role:"esterno", roleLabel:"Esterno Sinistro", fmv:6.37, gol:2, ast:1, p:15, g:3, price:3, note:""},
+  {name:"Samuele Birindelli", team:"Monza", role:"esterno", roleLabel:"Esterno Destro", fmv:6.28, gol:5, ast:2, p:37, g:7, price:3, note:""},
+  {name:"Giovanni Di Lorenzo", team:"Napoli", role:"terzino", roleLabel:"Terzino Destro", fmv:6.33, gol:2, ast:1, p:26, g:1, price:21, note:"Sostituto: Favasuli"},
+  {name:"Amir Rrahmani", team:"Napoli", role:"dc", roleLabel:"Difensore Centrale", fmv:6.48, gol:2, ast:0, p:21, g:2, price:20, note:""},
+  {name:"Leonardo Spinazzola", team:"Napoli", role:"terzino", roleLabel:"Terzino Sinistro", fmv:6.55, gol:3, ast:3, p:30, g:1, price:15, note:""},
+  {name:"Emanuele Valeri", team:"Parma", role:"terzino", roleLabel:"Terzino Sinistro", fmv:6.55, gol:0, ast:2, p:34, g:2, price:10, note:""},
+  {name:"Enrico Del Prato", team:"Parma", role:"terzino", roleLabel:"Terzino Destro", fmv:6.01, gol:2, ast:0, p:35, g:5, price:6, note:""},
+  {name:"Wesley", team:"Roma", role:"esterno", roleLabel:"Esterno Sinistro", fmv:6.47, gol:5, ast:0, p:30, g:7, price:38, note:""},
+  {name:"Nahuel Molina", team:"Roma", role:"esterno", roleLabel:"Esterno Destro", fmv:6.38, gol:2, ast:2, p:26, g:4, price:25, note:"Alternanza con Rensch"},
+  {name:"Konstantinos Koulierakis", team:"Roma", role:"braccetto", roleLabel:"Braccetto Sinistro", fmv:6.50, gol:4, ast:1, p:31, g:5, price:7, note:"Alternanza con Hermoso"},
+  {name:"Rafael Obrador", team:"Sassuolo", role:"terzino", roleLabel:"Terzino Sinistro", fmv:6.40, gol:1, ast:3, p:16, g:1, price:4, note:""},
+  {name:"Jay Idzes", team:"Sassuolo", role:"dc", roleLabel:"Difensore Centrale", fmv:5.91, gol:0, ast:0, p:35, g:2, price:2, note:""},
+  {name:"Omar Solet", team:"Udinese", role:"braccetto", roleLabel:"Braccetto Sinistro", fmv:6.40, gol:3, ast:1, p:34, g:1, price:22, note:""},
+  {name:"Ridgenacio Haps", team:"Venezia", role:"esterno", roleLabel:"Esterno Sinistro", fmv:6.35, gol:5, ast:3, p:25, g:6, price:3, note:""}
+];
+
+let activeRole = "all";
+let sortMode = "price-desc";
+let searchTerm = "";
+
+function priceTier(p){
+  if(p>=40) return 5;
+  if(p>=20) return 4;
+  if(p>=10) return 3;
+  if(p>=5) return 2;
+  return 1;
+}
+
+function render(){
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty');
+  let data = players.filter(pl => {
+    const matchesRole = activeRole === "all" || pl.role === activeRole;
+    const matchesSearch = !searchTerm || pl.name.toLowerCase().includes(searchTerm) || pl.team.toLowerCase().includes(searchTerm);
+    return matchesRole && matchesSearch;
+  });
+
+  data.sort((a,b) => {
+    switch(sortMode){
+      case "price-desc": return b.price - a.price;
+      case "price-asc": return a.price - b.price;
+      case "fmv-desc": return b.fmv - a.fmv;
+      case "name-asc": return a.name.localeCompare(b.name);
+      case "team-asc": return a.team.localeCompare(b.team) || b.price - a.price;
+    }
+  });
+
+  document.getElementById('count').textContent = data.length + (data.length === 1 ? " giocatore" : " giocatori");
+
+  if(data.length === 0){
+    list.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  let html = "";
+  let lastTeam = null;
+  const groupByTeam = sortMode === "team-asc";
+
+  data.forEach(pl => {
+    if(groupByTeam && pl.team !== lastTeam){
+      html += `<div class="group-label">${pl.team}</div>`;
+      lastTeam = pl.team;
+    }
+    const tier = priceTier(pl.price);
+    html += `
+      <div class="row">
+        <div class="bar ${pl.role}"></div>
+        <div class="main">
+          <div class="name-line">
+            <span class="name">${pl.name}</span>
+            <span class="team">${pl.team}</span>
+          </div>
+          <div class="role-line">
+            <span class="role-badge ${pl.role}">${pl.roleLabel}</span>
+            ${pl.note ? `<span class="note">${pl.note}</span>` : ""}
+          </div>
+          <div class="stats">
+            <span class="fmv">FMV <b>${pl.fmv.toFixed(2)}</b></span>
+            <span>Gol <b>${pl.gol}</b></span>
+            <span>Assist <b>${pl.ast}</b></span>
+            <span>Partite <b>${pl.p}</b></span>
+            <span>Gialli <b>${pl.g}</b></span>
+          </div>
+        </div>
+        <div class="price-col">
+          <div class="price" data-tier="${tier}">
+            <div class="num">${pl.price}</div>
+            <div class="lbl">crediti</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  render();
+});
+document.getElementById('sort').addEventListener('change', e => {
+  sortMode = e.target.value;
+  render();
+});
+document.getElementById('chips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('.chip').forEach(c => c.removeAttribute('data-active'));
+  chip.setAttribute('data-active', 'true');
+  activeRole = chip.dataset.role;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
