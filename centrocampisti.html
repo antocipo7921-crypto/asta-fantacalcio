@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centrocampisti — Foglio Asta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0e14;
+    --surface: #131824;
+    --surface-2: #1a2130;
+    --border: #262f42;
+    --text: #eef1f6;
+    --text-muted: #8993a8;
+    --gold: #f2b134;
+    --gold-soft: rgba(242,177,52,0.14);
+    --mediano: #e11d48;
+    --regista: #3b82f6;
+    --mezzala: #10b981;
+    --trequartista: #a855f7;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;}
+  .wrap{max-width:900px;margin:0 auto;padding:18px 14px 60px;}
+
+  header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg, var(--bg) 78%, transparent);padding-bottom:10px;margin-bottom:6px;}
+  .title-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding-top:6px;}
+  h1{font-family:'Barlow Condensed',sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;font-size:clamp(26px,6vw,36px);margin:0;line-height:0.95;}
+  h1 span{color:var(--gold);}
+  .count{font-size:13px;color:var(--text-muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+
+  .controls{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .search-sort{display:flex;gap:8px;}
+  input[type="search"]{
+    flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);
+    padding:10px 12px;border-radius:10px;font-size:15px;font-family:'Inter',sans-serif;
+  }
+  input[type="search"]::placeholder{color:var(--text-muted);}
+  select{
+    background:var(--surface);border:1px solid var(--border);color:var(--text);
+    padding:10px 10px;border-radius:10px;font-size:13px;font-family:'Inter',sans-serif;
+  }
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{
+    border:1px solid var(--border);background:var(--surface);color:var(--text-muted);
+    padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:600;cursor:pointer;
+    user-select:none;display:flex;align-items:center;gap:6px;transition:all .12s;
+  }
+  .chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+  .chip[data-active="true"]{color:var(--bg);border-color:transparent;}
+  .chip[data-role="all"][data-active="true"]{background:var(--text);}
+  .chip[data-role="trequartista"]{color:var(--trequartista);} .chip[data-role="trequartista"][data-active="true"]{background:var(--trequartista);}
+  .chip[data-role="mezzala"]{color:var(--mezzala);} .chip[data-role="mezzala"][data-active="true"]{background:var(--mezzala);}
+  .chip[data-role="regista"]{color:var(--regista);} .chip[data-role="regista"][data-active="true"]{background:var(--regista);}
+  .chip[data-role="mediano"]{color:var(--mediano);} .chip[data-role="mediano"][data-active="true"]{background:var(--mediano);}
+
+  .list{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+
+  .row{
+    display:grid;grid-template-columns:5px 1fr auto;align-items:stretch;
+    background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  }
+  .bar{width:5px;}
+  .bar.trequartista{background:var(--trequartista);} .bar.mezzala{background:var(--mezzala);}
+  .bar.regista{background:var(--regista);} .bar.mediano{background:var(--mediano);}
+
+  .main{padding:10px 12px;min-width:0;}
+  .name-line{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .name{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.2px;}
+  .team{font-size:12.5px;color:var(--text-muted);font-weight:500;}
+  .role-line{margin-top:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .role-badge{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:5px;}
+  .role-badge.trequartista{color:var(--trequartista);background:rgba(168,85,247,.14);}
+  .role-badge.mezzala{color:var(--mezzala);background:rgba(16,185,129,.14);}
+  .role-badge.regista{color:var(--regista);background:rgba(59,130,246,.14);}
+  .role-badge.mediano{color:var(--mediano);background:rgba(225,29,72,.14);}
+  .note{font-size:11px;color:var(--text-muted);font-style:italic;}
+
+  .stats{display:flex;gap:12px;margin-top:7px;font-size:12px;color:var(--text-muted);flex-wrap:wrap;font-variant-numeric:tabular-nums;}
+  .stats b{color:var(--text);font-weight:700;}
+  .fmv{display:flex;align-items:center;gap:3px;}
+  .fmv b{color:var(--gold);}
+
+  .price-col{display:flex;align-items:center;justify-content:center;padding:0 12px;background:var(--surface-2);border-left:1px solid var(--border);min-width:78px;}
+  .price{text-align:center;}
+  .price .num{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;line-height:1;color:var(--gold);}
+  .price .lbl{font-size:9px;letter-spacing:.6px;color:var(--text-muted);text-transform:uppercase;margin-top:2px;}
+  .price[data-tier="5"] .num{font-size:26px;text-shadow:0 0 14px rgba(242,177,52,.55);}
+  .price[data-tier="4"] .num{font-size:24px;text-shadow:0 0 8px rgba(242,177,52,.35);}
+
+  .group-label{
+    font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;
+    color:var(--text-muted);font-size:13px;letter-spacing:1px;margin:16px 2px 2px;
+    border-bottom:1px solid var(--border);padding-bottom:4px;
+  }
+  .group-label:first-child{margin-top:2px;}
+
+  .empty{text-align:center;color:var(--text-muted);padding:40px 10px;font-size:14px;}
+
+  @media (min-width:640px){
+    .row{grid-template-columns:5px 1fr auto;}
+    .stats{gap:16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title-row">
+      <h1>Centrocampisti<span>.</span></h1>
+      <div class="count" id="count">0 giocatori</div>
+    </div>
+    <div class="controls">
+      <div class="search-sort">
+        <input type="search" id="search" placeholder="Cerca giocatore o squadra…">
+        <select id="sort">
+          <option value="price-desc">Prezzo ↓</option>
+          <option value="price-asc">Prezzo ↑</option>
+          <option value="fmv-desc">FMV ↓</option>
+          <option value="name-asc">Nome A-Z</option>
+          <option value="team-asc">Squadra A-Z</option>
+        </select>
+      </div>
+      <div class="chips" id="chips">
+        <div class="chip" data-role="all" data-active="true"><span class="dot"></span>Tutti</div>
+        <div class="chip" data-role="trequartista"><span class="dot"></span>Trequartisti</div>
+        <div class="chip" data-role="mezzala"><span class="dot"></span>Mezzali</div>
+        <div class="chip" data-role="regista"><span class="dot"></span>Registi</div>
+        <div class="chip" data-role="mediano"><span class="dot"></span>Mediani</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="list" id="list"></div>
+  <div class="empty" id="empty" style="display:none;">Nessun giocatore trovato.</div>
+</div>
+
+<script>
+// Puoi aggiungere, modificare o rimuovere i giocatori in questo elenco
+const players = [
+  {name:"Manu Koné", team:"Roma", role:"mezzala", roleLabel:"Mezzala / Mediano", fmv:6.50, gol:3, ast:2, p:30, g:6, price:25, note:"Titolare nel centrocampo"},
+  {name:"Teun Koopmeiners", team:"Juventus", role:"trequartista", roleLabel:"Trequartista / Mezzala", fmv:7.20, gol:8, ast:5, p:32, g:4, price:55, note:"Rigorista e inserimenti"},
+  {name:"Hakan Calhanoglu", team:"Inter", role:"regista", roleLabel:"Regista / Mediano", fmv:7.45, gol:9, ast:6, p:33, g:5, price:65, note:"Rigorista principale"},
+  {name:"Nicolò Barella", team:"Inter", role:"mezzala", roleLabel:"Mezzala", fmv:6.95, gol:4, ast:7, p:35, g:4, price:45, note:"Garanzia titolarità"},
+  {name:"Tijjani Reijnders", team:"Milan", role:"mezzala", roleLabel:"Mezzala / Regista", fmv:6.75, gol:4, ast:4, p:34, g:3, price:30, note:""},
+  {name:"Mattia Zaccagni", team:"Lazio", role:"trequartista", roleLabel:"Esterno / Trequartista", fmv:7.10, gol:7, ast:5, p:31, g:6, price:50, note:"Rigorista"},
+  {name:"Frank Anguissa", team:"Napoli", role:"mediano", roleLabel:"Mediano / Mezzala", fmv:6.40, gol:2, ast:3, p:30, g:5, price:18, note:""},
+  {name:"Ederson", team:"Atalanta", role:"mezzala", roleLabel:"Mezzala / Mediano", fmv:6.80, gol:5, ast:2, p:33, g:7, price:35, note:""}
+];
+
+let activeRole = "all";
+let sortMode = "price-desc";
+let searchTerm = "";
+
+function priceTier(p){
+  if(p>=40) return 5;
+  if(p>=20) return 4;
+  if(p>=10) return 3;
+  if(p>=5) return 2;
+  return 1;
+}
+
+function render(){
+  const list = document.getElementById('list');
+  const empty = document.getElementById('empty');
+  let data = players.filter(pl => {
+    const matchesRole = activeRole === "all" || pl.role === activeRole;
+    const matchesSearch = !searchTerm || pl.name.toLowerCase().includes(searchTerm) || pl.team.toLowerCase().includes(searchTerm);
+    return matchesRole && matchesSearch;
+  });
+
+  data.sort((a,b) => {
+    switch(sortMode){
+      case "price-desc": return b.price - a.price;
+      case "price-asc": return a.price - b.price;
+      case "fmv-desc": return b.fmv - a.fmv;
+      case "name-asc": return a.name.localeCompare(b.name);
+      case "team-asc": return a.team.localeCompare(b.team) || b.price - a.price;
+    }
+  });
+
+  document.getElementById('count').textContent = data.length + (data.length === 1 ? " giocatore" : " giocatori");
+
+  if(data.length === 0){
+    list.innerHTML = "";
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  let html = "";
+  let lastTeam = null;
+  const groupByTeam = sortMode === "team-asc";
+
+  data.forEach(pl => {
+    if(groupByTeam && pl.team !== lastTeam){
+      html += `<div class="group-label">${pl.team}</div>`;
+      lastTeam = pl.team;
+    }
+    const tier = priceTier(pl.price);
+    html += `
+      <div class="row">
+        <div class="bar ${pl.role}"></div>
+        <div class="main">
+          <div class="name-line">
+            <span class="name">${pl.name}</span>
+            <span class="team">${pl.team}</span>
+          </div>
+          <div class="role-line">
+            <span class="role-badge ${pl.role}">${pl.roleLabel}</span>
+            ${pl.note ? `<span class="note">${pl.note}</span>` : ""}
+          </div>
+          <div class="stats">
+            <span class="fmv">FMV <b>${pl.fmv.toFixed(2)}</b></span>
+            <span>Gol <b>${pl.gol}</b></span>
+            <span>Assist <b>${pl.ast}</b></span>
+            <span>Partite <b>${pl.p}</b></span>
+            <span>Gialli <b>${pl.g}</b></span>
+          </div>
+        </div>
+        <div class="price-col">
+          <div class="price" data-tier="${tier}">
+            <div class="num">${pl.price}</div>
+            <div class="lbl">crediti</div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
+}
+
+document.getElementById('search').addEventListener('input', e => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  render();
+});
+document.getElementById('sort').addEventListener('change', e => {
+  sortMode = e.target.value;
+  render();
+});
+document.getElementById('chips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('.chip').forEach(c => c.removeAttribute('data-active'));
+  chip.setAttribute('data-active', 'true');
+  activeRole = chip.dataset.role;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
